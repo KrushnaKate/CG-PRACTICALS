@@ -1,0 +1,131 @@
+#include <GL/freeglut.h>
+#include <GL/glut.h>
+#include <GL/glu.h>
+#include <iostream>
+#include <math.h>
+
+using namespace std;
+
+GLint xi, yi, r, choice = 1;
+
+void setpixel(GLint x, GLint y)
+{
+    if (choice == 1)
+    {
+        glColor3f(1.0, 0.0, 0.0);
+    }
+    else if (choice == 2)
+    {
+        glColor3f(0.0, 0.0, 0.0);
+    }
+    else if (choice == 3)
+    {
+        glColor3f(1.0, 1.0, 0.0);
+    }
+    else if (choice == 4)
+    {
+        glColor3f(0.4, 0.9, 0.2);
+    }
+    else if (choice == 5)
+    {
+        glColor3f(0.0, 0.0, 1.0);
+    }
+    glBegin(GL_POINTS);
+    glVertex2f(x, y);
+    glEnd();
+    glFlush();
+}
+
+void drawCircle(int xc, int yc, int x, int y)
+{
+    setpixel(xc + x, yc + y);
+    setpixel(xc - x, yc + y);
+    setpixel(xc + x, yc - y);
+    setpixel(xc - x, yc - y);
+    setpixel(xc - y, yc + x);
+    setpixel(xc - y, yc - x);
+    setpixel(xc + y, yc + x);
+    setpixel(xc + y, yc - x);
+}
+
+void initialize()
+{
+    glClearColor(0.6, 0.6, 0.6, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glPointSize(5.0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0.0, 640.0, 0.0, 480.0);
+}
+
+class Circle
+{
+public:
+    void BresCircle()
+    {
+        GLint x = 0, y = r;
+        GLint s = 3 - 2 * r;
+        drawCircle(xi, yi, x, y);
+        while (y >= x)
+        {
+            x++;
+            if (s > 0)
+            {
+                y--;
+                s = s + 4 * (x - y) + 10;
+            }
+            else
+                s = s + 4 * x + 6;
+            drawCircle(xi, yi, x, y);
+        }
+    }
+};
+
+void keyboard(unsigned char key, int x, int y)
+{
+    if (key == 27)
+        exit(0);
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    static Circle l; // Declare l here
+    if (state == GLUT_DOWN)
+    {
+        if (button == GLUT_LEFT_BUTTON)
+        {
+            xi = x;
+            yi = 480 - y;
+            cout << "Enter the value of radius: ";
+            cin >> r;
+            glPointSize(2.0);
+            glBegin(GL_POINTS);
+            glVertex2i(xi, yi);
+            glEnd();
+            glFlush();
+          //  glutMouseFunc(NULL);
+            choice = 2; // Set color choice to black
+            l.BresCircle(); // Draw circle with black color
+        }
+    }
+}
+
+void display() {
+    // Empty display function
+}
+
+int main(int argc, char **argv)
+{
+    glutInit(&argc, argv);
+    glutInitWindowSize(640, 480);
+    glutInitWindowPosition(100, 0);
+    glutCreateWindow("Bresenham circle Drawing!!");
+    initialize();
+    glutMouseFunc(mouse);
+    glutKeyboardFunc(keyboard);
+    glutDisplayFunc(display); // Set an empty display function
+
+    glutMainLoop();
+
+    return 0;
+}
