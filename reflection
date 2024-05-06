@@ -1,0 +1,128 @@
+#include <iostream>
+#include <cmath>
+#include <GL/glut.h>
+
+using namespace std;
+
+int m[20][2], n = 0;
+bool reflectXAxis = false;
+bool reflectYAxis = false;
+
+void setpixel(GLint x, GLint y)
+{
+    glColor3f(0.0, 0.0, 1.0);
+    glBegin(GL_POINTS);
+    glVertex2f(x, y);
+    glEnd();
+    glFlush();
+}
+
+void setpcolor(double r1, double b1, double g1)
+{
+    glColor3f(r1, b1, g1);
+}
+
+void drawPolygon()
+{
+    // Draw the polygon
+    setpcolor(1, 1, 1);
+    glBegin(GL_LINE_LOOP);
+    for (int i = 0; i < n; i++)
+        glVertex2i(m[i][0], m[i][1]);
+    glEnd();
+}
+
+void reflection()
+{
+    // Apply reflection transformation
+    for (int i = 0; i < n; i++)
+    {
+        if (reflectXAxis)
+            m[i][1] = -m[i][1]; // Reflect about x-axis
+        if (reflectYAxis)
+            m[i][0] = -m[i][0]; // Reflect about y-axis
+    }
+
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
+    drawPolygon(); // Redraw the reflected polygon
+    glFlush();
+}
+
+void init()
+{
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColor3f(1.0, 0.0, 0.0);
+    glPointSize(2.0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-350, 350, -350, 350);
+    
+    // Display hints in the terminal
+    cout << "Hint: Press 'x' for reflection about the x-axis" << endl;
+    cout << "      Press 'y' for reflection about the y-axis" << endl;
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    // Draw original polygon
+    drawPolygon();
+    glFlush();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+    case 'x':
+    case 'X':
+        // Reflect about x-axis
+        reflectXAxis = true;
+        reflectYAxis = false;
+        reflection(); // Perform reflection
+        break;
+    case 'y':
+    case 'Y':
+        // Reflect about y-axis
+        reflectXAxis = false;
+        reflectYAxis = true;
+        reflection(); // Perform reflection
+        break;
+    default:
+        break;
+    }
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    if (state == GLUT_DOWN)
+    {
+        if (button == GLUT_LEFT_BUTTON)
+        {
+            m[n][0] = x - 350;
+            m[n][1] = 350 - y; // Flip y-axis to match OpenGL convention
+            m[n][2] = 1;
+            n++;
+            glutPostRedisplay(); // Request redraw to display the new point
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    glutInit(&argc, argv);
+    glutInitWindowSize(700, 700);
+    glutInitWindowPosition(500, 50);
+    glutCreateWindow("REFLECTION ONLY");
+    init();
+
+    // Registering display, keyboard, and mouse callback functions
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+
+    glutMainLoop();
+    return 0;
+}
