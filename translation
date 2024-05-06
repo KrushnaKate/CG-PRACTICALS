@@ -1,0 +1,132 @@
+#include<iostream>
+#include<GL/glut.h>
+#include<math.h>
+using namespace std;
+
+int m[20][3], n = 0;
+int tx, ty; // Translation factors
+
+void setpixel(GLint x, GLint y)
+{
+    glColor3f(0.0,0.0,1.0);
+    glBegin(GL_POINTS);
+    glVertex2f(x,y);
+    glEnd();
+    glFlush();
+}
+
+void setpcolor(double r1, double b1, double g1)
+{
+    glColor3f(r1,b1,g1);
+}
+
+void conect(int x, int y, int px, int py)
+{
+    glPointSize(2);
+    glBegin(GL_LINE_STRIP);
+    glVertex2i(x,y);
+    glVertex2i(px,py);
+    glEnd();
+    glFlush();
+}
+
+void translation()
+{
+    int tm[3][3] = {{1,0,tx},{0,1,ty},{0,0,1} };
+    int ne[3] = {} ;
+    for(int i=0 ; i<n; i++)
+    {
+        ne [0]  = tm[0][0]*m[i][0] + tm[0][1]*m[i][1] + tm[0][2]*m[i][2] ;
+        ne [1]  = tm[1][0]*m[i][0] + tm[1][1]*m[i][1] + tm[1][2]*m[i][2] ;
+        ne [2]  = tm[2][0]*m[i][0] + tm[2][1]*m[i][1] + tm[2][2]*m[i][2] ;
+        m[i][0] = ne[0] ;
+        m[i][1] = ne[1] ;
+        m[i][2] = ne[2] ;
+    }
+    for(int i=0 ; i<n; i++)
+    {
+        int ni = (i+1)%n;
+        setpcolor(1,1,0);
+        conect(m[i][0],m[i][1],m[ni][0],m[ni][1]) ;
+    }
+}
+
+void init()
+{
+    glClearColor(0.0,0.0,0.0,0.0);
+    glClear (GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColor3f(1.0,0.0,0.0);
+    glPointSize(2.0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-350,350,-350,350) ;
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    // Draw original polygon
+    for(int i=0 ; i<n; i++)
+    {
+        int ni = (i+1)%n;
+        setpcolor(1,1,1) ;
+        conect(m[i][0],m[i][1],m[ni][0],m[ni][1]) ;
+    }
+
+    // Perform translation
+    translation();
+
+    glFlush();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+    switch(key)
+    {
+        case 't':
+        case 'T':
+            // Prompt the user for translation factors
+            cout << "Enter x-translation factor: ";
+            cin >> tx;
+            cout << "Enter y-translation factor: ";
+            cin >> ty;
+            glutPostRedisplay(); // Trigger redraw to perform translation
+            break;
+        default:
+            break;
+    }
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    y = 700 - y; // Invert y coordinate to match OpenGL convention
+    if(state == GLUT_DOWN)
+    {
+        if(button == GLUT_LEFT_BUTTON)
+        {
+            m[n][0] = x - 350;
+            m[n][1] = y - 350;
+            m[n][2] = 1;
+            n++;
+            glutPostRedisplay(); // Request redraw to display the new point
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    glutInit(&argc,argv);
+    glutInitWindowSize(700,700);
+    glutInitWindowPosition(500,50);
+    glutCreateWindow("TRANSLATION ONLY");
+    init();
+
+    // Registering display, keyboard, and mouse callback functions
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+
+    glutMainLoop();
+    return 0;
+}
