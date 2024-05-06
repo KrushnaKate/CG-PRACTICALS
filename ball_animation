@@ -1,0 +1,69 @@
+#include <GL/glut.h>
+#include <cmath>
+
+// Global variables
+float ballX = 0.0; // Initial x-coordinate of the ball
+float ballY = 0.0; // Initial y-coordinate of the ball
+float ballRadius = 0.1; // Radius of the ball
+float dx = 0.005; // Increment for x-coordinate
+float dy = 0.007; // Increment for y-coordinate
+
+// Function to draw the ball
+void drawBall() {
+    glColor3f(1.0, 0.0, 0.0); // Set color to red
+    glBegin(GL_TRIANGLE_FAN);
+    for (int i = 0; i < 360; ++i) {
+        float theta = i * M_PI / 180.0;
+        float x = ballX + ballRadius * cos(theta);
+        float y = ballY + ballRadius * sin(theta);
+        glVertex2f(x, y);
+    }
+    glEnd();
+}
+
+// Function to display the scene
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
+    drawBall(); // Draw the ball
+    glFlush(); // Flush OpenGL buffers to the window
+}
+
+// Function to update the animation
+void update(int value) {
+    // Update ball position
+    ballX += dx;
+    ballY += dy;
+
+    // Check for collisions with window boundaries
+    if (ballX + ballRadius > 1.0 || ballX - ballRadius < -1.0) {
+        dx = -dx; // Reverse direction on collision with left or right edge
+    }
+    if (ballY + ballRadius > 1.0 || ballY - ballRadius < -1.0) {
+        dy = -dy; // Reverse direction on collision with top or bottom edge
+    }
+
+    // Redraw the scene
+    glutPostRedisplay();
+
+    // Call update function again after a short delay
+    glutTimerFunc(16, update, 0);
+}
+
+// Function to initialize OpenGL
+void init() {
+    glClearColor(0.0, 0.0, 0.0, 1.0); // Set the background color to black
+    glMatrixMode(GL_PROJECTION); // Set the matrix mode to projection
+    glLoadIdentity(); // Load the identity matrix
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0); // Set the clipping area
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv); // Initialize GLUT
+    glutInitWindowSize(400, 400); // Set the window size
+    glutCreateWindow("Bouncing Ball"); // Create a window with the given title
+    glutDisplayFunc(display); // Set the display callback function
+    glutTimerFunc(0, update, 0); // Set the update function and the delay
+    init(); // Initialize OpenGL parameters
+    glutMainLoop(); // Enter the GLUT event loop
+    return 0;
+}
